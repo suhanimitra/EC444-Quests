@@ -1,0 +1,9 @@
+dependencies:
+  protocol_examples_tapif_io:
+    path: ./protocol_examples_tapif_io
+    rules:
+      - if: "target in [linux]"
+  protocol_examples_common:
+    path: ./protocol_examples_common
+    rules:
+      - if: "target not in [linux]"

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Vote Display</title>
+    <!-- Include Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>  <!-- Ensure this is relative, as Express will serve it -->
+</head>
+<body>
+    <h1>Vote Tracker</h1>
+
+    <!-- Display vote list -->
+    <div id="vote-list">
+        <!-- New votes will be appended here -->
+    </div>
+
+    <!-- Buttons for vote actions -->
+    <button onclick="resetDatabase()">Reset Database</button>
+
+    <script>
+        // Connect to the server using Socket.IO
+        const socket = io.connect();  // The socket.io.js script connects to the same server by default
+
+        // Listen for new messages from the server
+        socket.on('newMessage', (data) => {
+            console.log('New message received:', data);
+            // Append the new message data to the vote list
+            document.getElementById('vote-list').innerHTML += `
+                <div>Client Name: ${data.clientName}, Message: ${data.message}, Time: ${data.timestamp}</div>
+            `;
+        });
+
+        // Function to reset the database
+        function resetDatabase() {
+            fetch('/reset', {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Database reset:", data);
+                document.getElementById('vote-list').innerHTML = '';
+            })
+            .catch(error => console.error("Error resetting database:", error));
+        }
+    </script>
+</body>
+</html>

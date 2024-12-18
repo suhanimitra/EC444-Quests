@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Plotting of Voltage from Serial Port Using Canvas</title>
+    <!-- Include CanvasJS library -->
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+</script>
+<body>
+    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+    <script>
+        // Create an empty data array for the chart
+        let dataPoints = [];
+        let time = 0; // Initialize time variable for the x-axis
+
+        // Create the chart
+        let chart = new CanvasJS.Chart("chartContainer", {
+            title: {
+                text: "Activity vs. Time"
+            },
+            axisX: {
+                title: "Time (seconds)",
+                interval: 1 // Define the interval for time axis
+            },
+            axisY: {
+                title: "Current Activity",
+                minimum: 0,  // 0 for inactive
+                maximum: 2,  // 2 for highly active
+                interval: 1,  // Each step represents one activity state
+            },
+            data: [{
+                type: "line",
+                dataPoints: dataPoints
+            }]
+        });
+
+        // Function to update the chart with new data
+        function updateChart(voltage) {
+            time++; // Increment time by 1 for each new data point
+            chart.options.data[0].dataPoints.push({ x: time, y: voltage }); // Add a new dataPoint with time and voltage
+            chart.render();
+        }
+
+        // Listen for data delivered to the socket (from the node server)
+        const socket = io.connect();
+        socket.on("data", (data) => {
+            // Parse the received data 
+            const values = data.split(' ');     // ESP sends (time, voltage) separated by a space
+            const voltage = parseInt(values[1]); // Assuming the second value is the voltage in mV
+            updateChart(voltage);                // Call function to update chart with voltage
+        });
+    </script>
+</body>
+</html>

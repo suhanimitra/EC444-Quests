@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Time in Each State for Cats</title>
+    <!-- Include CanvasJS library -->
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <!-- Include Socket.IO library -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="chartContainer" style="height: 400px; width: 100%;"></div>
+
+    <script>
+        const activityTime = {
+            '192.168.1.126': { inactive: 0, active: 0, highlyActive: 0 }, // SUHANI
+            '192.168.1.114': { inactive: 0, active: 0, highlyActive: 0 }, // LEYANDRA
+            '192.168.1.147': { inactive: 0, active: 0, highlyActive: 0 }, // MARGHE
+            '192.168.1.132': { inactive: 0, active: 0, highlyActive: 0 }  // KYLA
+        };
+
+        // Initialize the chart
+        const chart = new CanvasJS.Chart("chartContainer", {
+            title: {
+                text: "Total Time Spent in Each Activity State"
+            },
+            axisX: {
+                title: "Cats"
+            },
+            axisY: {
+                title: "Time (seconds)",
+                interval: 1
+            },
+            data: [
+                {
+                    type: "stackedBar",
+                    name: "Inactive",
+                    showInLegend: true,
+                    dataPoints: [
+                        { y: 0, label: "SUHANI" },
+                        { y: 0, label: "LEYANDRA" },
+                        { y: 0, label: "MARGHE" },
+                        { y: 0, label: "KYLA" }
+                    ]
+                },
+                {
+                    type: "stackedBar",
+                    name: "Active",
+                    showInLegend: true,
+                    dataPoints: [
+                        { y: 0, label: "SUHANI" },
+                        { y: 0, label: "LEYANDRA" },
+                        { y: 0, label: "MARGHE" },
+                        { y: 0, label: "KYLA" }
+                    ]
+                },
+                {
+                    type: "stackedBar",
+                    name: "Highly Active",
+                    showInLegend: true,
+                    dataPoints: [
+                        { y: 0, label: "SUHANI" },
+                        { y: 0, label: "LEYANDRA" },
+                        { y: 0, label: "MARGHE" },
+                        { y: 0, label: "KYLA" }
+                    ]
+                }
+            ]
+        });
+
+        // Function to update the chart with new data
+        function updateChart() {
+            chart.options.data[0].dataPoints = [
+                { y: activityTime['192.168.1.126'].inactive, label: "SUHANI" },
+                { y: activityTime['192.168.1.114'].inactive, label: "LEYANDRA" },
+                { y: activityTime['192.168.1.147'].inactive, label: "MARGHE" },
+                { y: activityTime['192.168.1.132'].inactive, label: "KYLA" }
+            ];
+            chart.options.data[1].dataPoints = [
+                { y: activityTime['192.168.1.126'].active, label: "SUHANI" },
+                { y: activityTime['192.168.1.114'].active, label: "LEYANDRA" },
+                { y: activityTime['192.168.1.147'].active, label: "MARGHE" },
+                { y: activityTime['192.168.1.132'].active, label: "KYLA" }
+            ];
+            chart.options.data[2].dataPoints = [
+                { y: activityTime['192.168.1.126'].highlyActive, label: "SUHANI" },
+                { y: activityTime['192.168.1.114'].highlyActive, label: "LEYANDRA" },
+                { y: activityTime['192.168.1.147'].highlyActive, label: "MARGHE" },
+                { y: activityTime['192.168.1.132'].highlyActive, label: "KYLA" }
+            ];
+            chart.render();
+        }
+
+        // Connect to the server via Socket.IO
+        const socket = io();
+
+        // Listen for leaderboard updates
+        socket.on('leaderboardUpdate', (data) => {
+            data.clients.forEach(client => {
+                const name = client.client; // This is the IP address
+                if (activityTime[name]) {
+                    activityTime[name].inactive = client.inactiveSeconds;
+                    activityTime[name].active = client.activeSeconds;
+                    activityTime[name].highlyActive = client.highlyActiveSeconds;
+                }
+            });
+            updateChart();
+        });
+
+        // Listen for leader changes
+        socket.on('leaderChanged', (data) => {
+            const leaderName = data.leader; // Get the new leader name
+            console.log(`New Leader: ${leaderName}`);
+        });
+    </script>
+</body>
+</html>
